@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Kompas</string>
+    <string name="alpha">Alpha</string>
+    <string name="compass_face">Compass face</string>
+</resources>
