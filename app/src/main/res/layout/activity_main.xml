@@ -9,7 +9,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="net.myusri.kompas.MainActivity">
+    tools:context="my.myusri.kompas.MainActivity">
 
     <SeekBar
         android:layout_width="match_parent"
@@ -22,47 +22,13 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
-
-    <TextView
-        android:text="@string/alpha"
-        android:layout_height="wrap_content"
-        android:id="@+id/alphaPopup"
-        android:layout_width="match_parent"
-        android:padding="5dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="29dp"
-        android:background="@android:color/holo_blue_dark"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:visibility="gone"
-        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-        android:textAlignment="center"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="15dp"
-        android:id="@+id/logOutput"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-        android:background="@android:color/darker_gray"
-        android:padding="3dp"
-        android:textAlignment="center"/>
-
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@drawable/compass"
         android:id="@+id/compassView"
-        android:layout_centerVertical="true"
+        android:layout_below="@id/alphaBar"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
-        android:layout_marginBottom="50dp"
+        android:layout_marginTop="5dp"
         android:contentDescription="@string/compass_face"/>
 </RelativeLayout>

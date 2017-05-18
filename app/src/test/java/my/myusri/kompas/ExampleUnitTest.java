@@ -1,4 +1,4 @@
-package net.myusri.kompas;
+package my.myusri.kompas;
 
 import org.junit.Test;
 

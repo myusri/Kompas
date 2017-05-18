@@ -1,4 +1,4 @@
-package net.myusri.kompas;
+package my.myusri.kompas;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
