@@ -24,7 +24,8 @@ public class MainActivity
   implements SensorEventListener, SeekBar.OnSeekBarChangeListener {
 
   // let save some battery, shall we
-  private static final int SENSOR_DELAY =  500000;
+  private static final int    SAMPLING_PERIOD =  500000;
+  private static final double MAX_ALPHA = 0.95;
 
   private double alpha;
   private double minProjRatio;
@@ -46,6 +47,19 @@ public class MainActivity
     toast.show();
   }
 
+  private void setAlphaBar(double alpha) {
+    int max = alphaBar.getMax();
+    int progress = (int)Math.round(alpha/MAX_ALPHA * max);
+    if (progress > max) progress = max;
+    alphaBar.setProgress(progress);
+  }
+
+  private double getAlphaBar() {
+    double progress = alphaBar.getProgress();
+    double max = alphaBar.getMax();
+    return MAX_ALPHA * progress/max;
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -53,11 +67,12 @@ public class MainActivity
     prefs = PreferenceManager.getDefaultSharedPreferences(this);
     alpha = prefs.getFloat("alpha", 0.5f);
     minProjRatio = prefs.getFloat("min_proj_ratio", 0.1f);
+
     alphaBar = (SeekBar) findViewById(R.id.alphaBar);
     alphaBar.setOnSeekBarChangeListener(this);
-    alphaBar.setProgress((int)(alpha * alphaBar.getMax()));
-    compass = (ImageView) findViewById(R.id.compassView);
+    setAlphaBar(alpha);
 
+    compass = (ImageView) findViewById(R.id.compassView);
     display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE))
       .getDefaultDisplay();
     sensorMgr = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -77,7 +92,7 @@ public class MainActivity
     if (magSensor != null) {
       // use NaN to signal to restart compass computation/filtering
       lastDeg = lastVals[0] = lastVals[1] = lastVals[2] = Float.NaN;
-      sensorMgr.registerListener(this, magSensor, SENSOR_DELAY);
+      sensorMgr.registerListener(this, magSensor, SAMPLING_PERIOD);
     }
   }
 
@@ -90,7 +105,7 @@ public class MainActivity
 
   @Override
   public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-    alpha = (double)alphaBar.getProgress() / alphaBar.getMax();
+    alpha = getAlphaBar();
     prefs.edit().putFloat("alpha", (float)alpha).apply();
     showToast(String.format(Locale.US, "Filter coefficient: %5.3f", alpha));
   }
@@ -168,7 +183,7 @@ public class MainActivity
     // the device less vertical.
 
     if (projMag/mag < minProjRatio) {
-      showToast("Please keep your device less vertical");
+      showToast("Please keep your device as horizontal as possible");
       return;
     }
     lastVals[0] = (float)mx;
