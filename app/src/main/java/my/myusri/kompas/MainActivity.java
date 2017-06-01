@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.Surface;
 import android.view.WindowManager;
 import android.view.animation.RotateAnimation;
@@ -21,6 +22,7 @@ public class MainActivity
   private static final float MAX_ALPHA = 0.95f;
   private double minProjRatio;
 
+  private float lastAlpha;
   private Display display;
   private SeekBar alphaBar;
   private Toast toast;
@@ -31,8 +33,10 @@ public class MainActivity
 
   private void showMessage(String format, Object ...args) {
     format = String.format(format, args);
-    if (toast == null)
+    if (toast == null) {
       toast = Toast.makeText(this, format, Toast.LENGTH_SHORT);
+      toast.setGravity(Gravity.BOTTOM, 0, 20);
+    }
     else toast.setText(format);
     toast.show();
   }
@@ -63,11 +67,21 @@ public class MainActivity
       .getDefaultDisplay();
     SensorManager sensorMgr
       = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-    strategy = new SimpleCompassStrategy(sensorMgr, this);
+
+    strategy = new RotationCompassStrategy(sensorMgr, this);
+    if (strategy.isValid())
+      showMessage("Using rotation vector sensor");
+    else {
+      strategy = new SimpleCompassStrategy(sensorMgr, this);
+      if (strategy.isValid())
+        showMessage("Using magnetic sensor");
+    }
     if (!strategy.isValid())
-      showMessage("Your device doesn't seem to have magnetic sensor");
+      showMessage("No sensor to use for compass");
+
     strategy.setAlpha(alpha);
 
+    lastAlpha = Float.NaN;
     alphaBar = (SeekBar) findViewById(R.id.alphaBar);
     alphaBar.setOnSeekBarChangeListener(this);
     setAlphaBar(alpha);
@@ -100,7 +114,9 @@ public class MainActivity
     float alpha = getAlphaBar();
     strategy.setAlpha(alpha);
     prefs.edit().putFloat("alpha", alpha).apply();
-    showMessage("Filter coefficient: %5.3f", alpha);
+    if (!Float.isNaN(lastAlpha) && lastAlpha != alpha)
+      showMessage("Filter coefficient: %5.3f", alpha);
+    lastAlpha = alpha;
   }
   @Override
   public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -140,6 +156,8 @@ public class MainActivity
     return x-(float)((Math.floor(x/m + 0.5))*m);
   }
 
+  private int nData;
+
   @Override
   public void newData(float deg, float mx, float my, float mz) {
     final double mx2 = mx*mx;
@@ -159,7 +177,6 @@ public class MainActivity
       showMessage("Please keep your device as horizontal as possible");
       return;
     }
-    showMessage("inclination: %5.1f°", -incl);
     deg = (deg + 360.0f) % 360.0f;
     if (Float.isNaN(lastDeg)) lastDeg = deg;
     else {
@@ -167,9 +184,13 @@ public class MainActivity
       // continue on increasing the degrees. Same when we go below
       // 0 and beyond -360, we will continue decreasing the degrees.
       float delta = smod(deg - lastDeg, 360);
-      deg = lastDeg + delta;
+      float contDeg = lastDeg + delta;
+      rotateCompass(lastDeg, contDeg);
+      if (++nData%4 == 0) {
+        showMessage(
+          "N %5.1f° INC %5.1f° [%5.2f %5.2f %5.2f]", deg, incl, mx, my, mz);
+      }
+      lastDeg = contDeg;
     }
-    rotateCompass(lastDeg, deg);
-    lastDeg = deg;
   }
 }
